@@ -7,3 +7,7 @@ src/**.js
 coverage
 *.log
 yarn.lock
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

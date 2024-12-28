@@ -43,6 +43,8 @@
   "devDependencies": {
     "@ava/typescript": "^1.1.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
+    "@playwright/test": "^1.49.1",
+    "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^4.0.1",
     "@typescript-eslint/parser": "^4.0.1",
     "ava": "^6.2.0",
