@@ -41,7 +41,7 @@
     "node": ">=10"
   },
   "devDependencies": {
-    "@ava/typescript": "^1.1.1",
+    "@ava/typescript": "^5.0.0",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@opentelemetry/sdk-node": "^0.57.0",
     "@playwright/test": "^1.49.1",
@@ -85,10 +85,12 @@
     "typescript": {
       "rewritePaths": {
         "src/": "build/main/"
-      }
+      },
+      "compile": false
     },
     "files": [
-      "!build/module/**"
+      "!build/module/**",
+      "!test/e2e/**"
     ]
   },
   "config": {
