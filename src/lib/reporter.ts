@@ -50,7 +50,10 @@ class OpenTelemetryReporter implements Reporter {
   }
 
   onStepBegin(test: TestCase, _result: TestResult, step: TestStep): void {
-    const parent = this.testSpans[test.id];
+    const parent =
+      step.parent === undefined
+        ? this.stepSapns[getHashFromStepTitle(step.parent)]
+        : this.testSpans[test.id];
 
     const stepHash = getHashFromStepTitle(step);
 
