@@ -1,16 +1,20 @@
 import opentelemetry, { SpanStatusCode } from '@opentelemetry/api';
 import { Span, Tracer } from '@opentelemetry/api';
 import {
+  FullConfig,
   Reporter,
   TestCase,
   TestResult,
   TestStep,
 } from '@playwright/test/reporter';
 
+import { formatTestTitle } from './format-test-title';
 import { getHashFromStepTitle } from './get-hash-from-step-title';
 import { name as PKG_NAME, version as PKG_VERSION } from './version';
 
 class OpenTelemetryReporter implements Reporter {
+  private config: FullConfig;
+
   private testSpans: { [key in string]: Span } = {};
   private stepSapns: { [key in string]: Span } = {};
   private tracer: Tracer;
@@ -19,8 +23,12 @@ class OpenTelemetryReporter implements Reporter {
     this.tracer = opentelemetry.trace.getTracer(PKG_NAME, PKG_VERSION);
   }
 
+  onBegin(config: FullConfig): void {
+    this.config = config;
+  }
+
   onTestBegin(test: TestCase, result: TestResult): void {
-    const testSpan = this.tracer.startSpan(test.titlePath().join(' > '), {
+    const testSpan = this.tracer.startSpan(formatTestTitle(this.config, test), {
       startTime: result.startTime,
     });
     this.testSpans[test.id] = testSpan;
@@ -45,17 +53,17 @@ class OpenTelemetryReporter implements Reporter {
           message: result.error?.message || '',
         });
       }
-      testSpan.end();
+      testSpan.end(result.startTime.getTime() + result.duration);
     }
   }
 
   onStepBegin(test: TestCase, _result: TestResult, step: TestStep): void {
     const parent =
       step.parent === undefined
-        ? this.stepSapns[getHashFromStepTitle(step.parent)]
-        : this.testSpans[test.id];
+        ? this.testSpans[test.id]
+        : this.stepSapns[getHashFromStepTitle(test, step.parent, this.config)];
 
-    const stepHash = getHashFromStepTitle(step);
+    const stepHash = getHashFromStepTitle(test, step, this.config);
 
     const ctx = opentelemetry.trace.setSpan(
       opentelemetry.context.active(),
@@ -73,8 +81,9 @@ class OpenTelemetryReporter implements Reporter {
     this.stepSapns[stepHash] = stepSpan;
   }
 
-  onStepEnd(_test: TestCase, _result: TestResult, step: TestStep): void {
-    const stepSpan = this.stepSapns[getHashFromStepTitle(step)];
+  onStepEnd(test: TestCase, _result: TestResult, step: TestStep): void {
+    const stepSpan =
+      this.stepSapns[getHashFromStepTitle(test, step, this.config)];
     if (stepSpan) {
       stepSpan.setAttributes({
         'step.category': step.category,
@@ -93,7 +102,7 @@ class OpenTelemetryReporter implements Reporter {
           message: step.error?.message || '',
         });
       }
-      stepSpan.end();
+      stepSpan.end(step.startTime.getTime() + step.duration);
     }
   }
 
