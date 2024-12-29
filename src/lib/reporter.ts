@@ -7,6 +7,8 @@ import {
   TestStep,
 } from '@playwright/test/reporter';
 
+import { name as PKG_NAME, version as PKG_VERSION } from '../../package.json';
+
 import { getHashFromStepTitle } from './get-hash-from-step-title';
 
 class OpenTelemetryReporter implements Reporter {
@@ -15,7 +17,7 @@ class OpenTelemetryReporter implements Reporter {
   private tracer: Tracer;
 
   constructor() {
-    this.tracer = opentelemetry.trace.getTracer('playwright');
+    this.tracer = opentelemetry.trace.getTracer(PKG_NAME, PKG_VERSION);
   }
 
   onTestBegin(test: TestCase, result: TestResult): void {

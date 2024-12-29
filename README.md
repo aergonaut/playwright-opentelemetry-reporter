@@ -3,14 +3,14 @@
 Simple reporter that generates OpenTelemetry traces from Playwright test runs. You can then export these traces to your
 vendor of choice.
 
-## Installation
+## Usage
 
 ### Dependencies
 
 Install the package with your favorite package manager:
 
 ```
-$ npm install playwright-opentelemetry-reporter --save-dev
+$ npm install @aergonaut/playwright-opentelemetry-reporter --save-dev
 ```
 
 You will also need to install the OpenTelemetry Node SDK and any other packages required by your vendor to export traces.
@@ -49,11 +49,11 @@ are exported before Playwright exits.
 
 Configure Playwright to use your `global-setup.ts` and the reporter:
 
-```js
+```ts
 // playwright.config.ts
 export default defineConfig({
   globalSetup: require.resolve("./global-setup.ts"),
-  reporter: "playwright-opentelemetry-reporter",
+  reporter: "@aergonaut/playwright-opentelemetry-reporter",
 })
 ```
 
