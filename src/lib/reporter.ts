@@ -7,9 +7,8 @@ import {
   TestStep,
 } from '@playwright/test/reporter';
 
-import { name as PKG_NAME, version as PKG_VERSION } from '../../package.json';
-
 import { getHashFromStepTitle } from './get-hash-from-step-title';
+import { name as PKG_NAME, version as PKG_VERSION } from './version';
 
 class OpenTelemetryReporter implements Reporter {
   private testSpans: { [key in string]: Span } = {};

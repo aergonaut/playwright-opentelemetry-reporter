@@ -1,1 +1,3 @@
-export * from './lib/reporter';
+import OpenTelemetryReporter from './lib/reporter';
+
+export default OpenTelemetryReporter;

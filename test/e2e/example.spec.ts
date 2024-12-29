@@ -18,3 +18,9 @@ test('get started link', async ({ page }) => {
     page.getByRole('heading', { name: 'Installation' })
   ).toBeVisible();
 });
+
+test.fail('looking for a non-existent link', async ({ page }) => {
+  await page.goto('https://playwright.dev');
+
+  await expect(page.getByRole('link', { name: 'Foobar' })).toBeVisible();
+});
