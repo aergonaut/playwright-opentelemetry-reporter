@@ -3,6 +3,8 @@
 Simple reporter that generates OpenTelemetry traces from Playwright test runs. You can then export these traces to your
 vendor of choice.
 
+![Example of trace in Honeycomb](docs/images/honeycomb-trace-example.png)
+
 ## Usage
 
 ### Dependencies
@@ -57,6 +59,6 @@ export default defineConfig({
 })
 ```
 
-## Lcense
+## License
 
 MIT.
