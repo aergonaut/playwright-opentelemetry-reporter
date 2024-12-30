@@ -67,6 +67,16 @@ This reporter generates spans for each test case and for each test step within e
 according to Playwright's internal organization. Practically, this means that work in before and after hooks will be
 grouped under nested spans, as will work to set up fixtures, etc.
 
+### Span Statuses
+
+The reporter will set status on test spans and step spans according to the status of each test or step.
+
+For step spans, if an error occurs during the step (e.g. a locator times out, or a click fails), the span's status will
+be set to `ERROR` and the error message will be recorded on the span.
+
+For test spans, the span will only be set to `ERROR` if the test fails _unexpectedly_. Tests which are skipped or which
+pass will be `UNSET`. Similarly, expected errors (e.g. declared with `test.fail`) will also be `UNSET`.
+
 ### Attaching Span Attributes
 
 You can attach attributes to the test span by using Playwright
