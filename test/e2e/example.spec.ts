@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import { annotationLabel } from '../../';
+
 test('has title', async ({ page }) => {
   await page.goto('https://playwright.dev/');
 
@@ -9,6 +11,11 @@ test('has title', async ({ page }) => {
 
 test('get started link', async ({ page }) => {
   await page.goto('https://playwright.dev/');
+
+  test.info().annotations.push({
+    type: annotationLabel('foobar'),
+    description: 'fizzbuzz',
+  });
 
   // Click the get started link.
   await page.getByRole('link', { name: 'Get started' }).click();

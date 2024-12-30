@@ -1,6 +1,11 @@
 import opentelemetry, { SpanStatusCode } from '@opentelemetry/api';
 import { Span, Tracer } from '@opentelemetry/api';
 import {
+  ATTR_TEST_CASE_NAME,
+  ATTR_TEST_CASE_RESULT_STATUS,
+  ATTR_TEST_SUITE_NAME,
+} from '@opentelemetry/semantic-conventions/incubating';
+import {
   FullConfig,
   Reporter,
   TestCase,
@@ -37,17 +42,28 @@ class OpenTelemetryReporter implements Reporter {
   onTestEnd(test: TestCase, result: TestResult): void {
     const testSpan = this.testSpans[test.id];
     if (testSpan) {
+      // Tests which are skipped or whose result status matches the expected
+      // status are considered passing.
+      const isPassing =
+        result.status === 'skipped' || result.status === test.expectedStatus;
+
       testSpan.setAttributes({
-        'test.status': result.status,
-        'test.outcome': test.outcome(),
-        'test.title': test.title,
-        'test.location.file': test.location.file,
-        'test.location.line': test.location.line,
-        'test.location.column': test.location.column,
-        'test.retry': result.retry,
-        'test.workerIndex': result.workerIndex,
+        [ATTR_TEST_CASE_NAME]: formatTestTitle(this.config, test),
+        [ATTR_TEST_CASE_RESULT_STATUS]: isPassing ? 'pass' : 'fail',
+        [ATTR_TEST_SUITE_NAME]: test.parent.title,
+        'test.case.location_file': test.location.file,
+        'test.case.location_line': test.location.line,
+        'test.case.location_column': test.location.column,
       });
-      if (result.error) {
+
+      test.annotations.forEach((annotation) => {
+        if (annotation.type.startsWith(TEST_ANNOTATION_SCOPE)) {
+          const attrLabel = annotation.type.replace(TEST_ANNOTATION_SCOPE, '');
+          testSpan.setAttribute(attrLabel, annotation.description);
+        }
+      });
+
+      if (!isPassing) {
         testSpan.setStatus({
           code: SpanStatusCode.ERROR,
           message: result.error?.message || '',
@@ -86,14 +102,14 @@ class OpenTelemetryReporter implements Reporter {
       this.stepSapns[getHashFromStepTitle(test, step, this.config)];
     if (stepSpan) {
       stepSpan.setAttributes({
-        'step.category': step.category,
-        'step.title': step.title,
+        'test.step.category': step.category,
+        'test.step.name': step.title,
       });
       if (step.location) {
         stepSpan.setAttributes({
-          'step.location.file': step.location.file,
-          'step.location.line': step.location.line,
-          'step.location.column': step.location.column,
+          'test.step.location_file': step.location.file,
+          'test.step.location_line': step.location.line,
+          'test.step.location_column': step.location.column,
         });
       }
       if (step.error) {
@@ -112,3 +128,19 @@ class OpenTelemetryReporter implements Reporter {
 }
 
 export default OpenTelemetryReporter;
+
+/**
+ * Prefix required for any annotation to be converted into a span attribute.
+ */
+export const TEST_ANNOTATION_SCOPE = 'pw_otel_reporter.';
+
+/**
+ * Utility function to generate an annotation label which this reporter will
+ * use to tag spans.
+ *
+ * @param label {string} the label to use
+ * @returns {string} the label with the required prefix added
+ */
+export function annotationLabel(label: string): string {
+  return `${TEST_ANNOTATION_SCOPE}${label}`;
+}
