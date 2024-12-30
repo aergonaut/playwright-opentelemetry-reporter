@@ -5,7 +5,7 @@ vendor of choice.
 
 ![Example of trace in Honeycomb](docs/images/honeycomb-trace-example.png)
 
-## Usage
+## Installation
 
 ### Dependencies
 
@@ -57,6 +57,35 @@ export default defineConfig({
   globalSetup: require.resolve("./global-setup.ts"),
   reporter: "@aergonaut/playwright-opentelemetry-reporter",
 })
+```
+
+## Usage
+
+### Generated Spans
+
+This reporter generates spans for each test case and for each test step within each test case. Step spans are nested
+according to Playwright's internal organization. Practically, this means that work in before and after hooks will be
+grouped under nested spans, as will work to set up fixtures, etc.
+
+### Attaching Span Attributes
+
+You can attach attributes to the test span by using Playwright
+[test annotations](https://playwright.dev/docs/test-annotations). Your annotation `type` must start with the prefix
+`pw_otel_reporter.` in order to be attached to the span. Anything after the prefix will be used as the attribute name,
+and the description will be used as the attribute value.
+
+To make constructing the `type` easier, you can use the `annotationLabel` function.
+
+```ts
+import { annotationLabel } from "@aergonaut/playwright-opentelemetry-reporter";
+
+test("example test", async ({ page }) => {
+  // ...
+  test.info().annotations.push({
+    type: annotationLabel("my_annotation"),
+    description: "My custom annotation!",
+  });
+});
 ```
 
 ## License
