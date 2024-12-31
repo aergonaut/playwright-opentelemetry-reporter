@@ -1,6 +1,9 @@
 import opentelemetry, { SpanStatusCode } from '@opentelemetry/api';
 import { Span, Tracer } from '@opentelemetry/api';
 import {
+  ATTR_CODE_COLUMN,
+  ATTR_CODE_FILEPATH,
+  ATTR_CODE_LINENO,
   ATTR_TEST_CASE_NAME,
   ATTR_TEST_CASE_RESULT_STATUS,
   ATTR_TEST_SUITE_NAME,
@@ -51,9 +54,9 @@ class OpenTelemetryReporter implements Reporter {
         [ATTR_TEST_CASE_NAME]: formatTestTitle(this.config, test),
         [ATTR_TEST_CASE_RESULT_STATUS]: isPassing ? 'pass' : 'fail',
         [ATTR_TEST_SUITE_NAME]: test.parent.title,
-        'test.case.location_file': test.location.file,
-        'test.case.location_line': test.location.line,
-        'test.case.location_column': test.location.column,
+        [ATTR_CODE_FILEPATH]: test.location.file,
+        [ATTR_CODE_LINENO]: test.location.line,
+        [ATTR_CODE_COLUMN]: test.location.column,
       });
 
       test.annotations.forEach((annotation) => {
@@ -107,9 +110,9 @@ class OpenTelemetryReporter implements Reporter {
       });
       if (step.location) {
         stepSpan.setAttributes({
-          'test.step.location_file': step.location.file,
-          'test.step.location_line': step.location.line,
-          'test.step.location_column': step.location.column,
+          [ATTR_CODE_FILEPATH]: step.location.file,
+          [ATTR_CODE_LINENO]: step.location.line,
+          [ATTR_CODE_COLUMN]: step.location.column,
         });
       }
       if (step.error) {
